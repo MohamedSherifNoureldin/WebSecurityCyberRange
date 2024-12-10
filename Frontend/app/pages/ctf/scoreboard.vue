@@ -102,7 +102,8 @@ onMounted(() => {
                 v-if="row == scoreboard[userindex]"
                 class="flex items-center"
               >
-                <span class="text-primary-500 dark:text-primary-400" v-html="row.name"/>
+                <!-- <span class="text-primary-500 dark:text-primary-400" v-html="row.name"/> -->
+                <span class="text-primary-500 dark:text-primary-400">{{ row.name }}</span>
 
                  <span
                   class="ml-2 px-2 py-1 text-xs font-semibold text-white bg-primary-500 dark:bg-primary-400 rounded-full"
@@ -114,7 +115,8 @@ onMounted(() => {
                 v-else
                 class="flex items-center"
               >
-                <span v-html="row.name"/>
+                <!-- <span v-html="row.name"/> -->
+                <span>{{ row.name }}</span>
 
               </div>
             </template>

@@ -42,7 +42,8 @@ func createTables() error {
         password TEXT NOT NULL,
         running_lab TEXT,
         attack_defense_role TEXT DEFAULT 'Out',
-        otp TEXT
+        otp TEXT,
+		otp_expiration DATETIME
 	);
 
     CREATE TABLE IF NOT EXISTS labs (

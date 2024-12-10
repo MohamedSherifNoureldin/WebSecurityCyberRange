@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"time"
 
 	"cyberrange/server/handlers/admin"
 	"cyberrange/server/handlers/auth"
@@ -39,7 +40,14 @@ func StartServer() error {
 	authGroup.POST("/register", auth.Register)
 	authGroup.POST("/register-admin", auth.RegisterAdmin)
 	authGroup.POST("/forget-password", auth.ForgetP)
-	authGroup.POST("/change-password", auth.ChangePass)
+	// authGroup.POST("/change-password", auth.ChangePass)
+	authGroup.POST("/change-password", auth.ChangePass, middleware.RateLimiterWithConfig(middleware.RateLimiterConfig{
+		Store: middleware.NewRateLimiterMemoryStoreWithConfig(middleware.RateLimiterMemoryStoreConfig{
+			Rate:      5,               // Allow 5 requests
+			Burst:     1,               // Burst capacity
+			ExpiresIn: 1 * time.Minute, // Per minute window
+		}),
+	}))
 
 	sharedGroup := api.Group("/shared")
 	sharedGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))

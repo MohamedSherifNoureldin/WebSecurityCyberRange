@@ -1,8 +1,9 @@
 package auth
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"strings"
 	"time"
 
@@ -20,8 +21,7 @@ func ForgetP(c echo.Context) error {
 
 	err := c.Bind(&forgetPassword)
 	if err != nil {
-		// Return a generic error message
-		return c.JSON(400, map[string]string{"error": "Invalid input"})
+		return c.JSON(400, map[string]string{"error": "Invalid request payload"})
 	}
 
 	if forgetPassword.Email == "" {
@@ -30,35 +30,38 @@ func ForgetP(c echo.Context) error {
 
 	forgetPassword.Email = strings.ToLower(forgetPassword.Email)
 
-	otp := generateOTP()
-
-	// Use a single update query to update the OTP if the email exists
-	result, err := db.DB.Exec("UPDATE users SET otp = ? WHERE email = ?", otp, forgetPassword.Email)
+	var email string
+	err = db.DB.QueryRow("SELECT email FROM users WHERE email = ?", forgetPassword.Email).Scan(&email)
 	if err != nil {
-		return c.JSON(500, map[string]string{"error": "Internal server error"})
+		return c.JSON(200, map[string]string{"message": "If the email exists, you will receive an OTP"})
 	}
 
-	// Check if any row was affected
-	rowsAffected, err := result.RowsAffected()
+	// Generate a secure OTP
+	otp, otpErr := generateSecureOTP(6)
+	if otpErr != nil {
+		return c.JSON(500, map[string]string{"error": "Failed to generate OTP"})
+	}
+
+	// Update the OTP and set its expiration time (5 minutes from now)
+	expiration := time.Now().Add(5 * time.Minute)
+	_, err = db.DB.Exec("UPDATE users SET otp = ?, otp_expiration = ? WHERE email = ?", otp, expiration, forgetPassword.Email)
 	if err != nil {
-		return c.JSON(500, map[string]string{"error": "Internal server error"})
+		return c.JSON(500, map[string]string{"error": "Failed to update OTP"})
 	}
 
-	// Always return the same response regardless of whether the email exists
-	if rowsAffected == 0 {
-		// Simulate a successful response even if the email doesn't exist
-		return c.JSON(200, map[string]string{"message": "Check your email for OTP to reset your password"})
-	}
-
-	// Simulate sending OTP email here (log for testing or send via email service)
-
-	return c.JSON(200, map[string]string{"message": "Check your email for OTP to reset your password"})
+	return c.JSON(200, map[string]string{"message": "If the email exists, you will receive an OTP"})
 }
 
-func generateOTP() string {
-	rand.Seed(time.Now().UnixNano())
-
-	otp := rand.Intn(900) + 100
-
-	return fmt.Sprintf("%03d", otp)
+// generateSecureOTP generates a cryptographically secure OTP of the specified length
+func generateSecureOTP(length int) (string, error) {
+	otp := ""
+	for i := 0; i < length; i++ {
+		// Generate a single random digit (0-9)
+		num, err := rand.Int(rand.Reader, big.NewInt(10))
+		if err != nil {
+			return "", fmt.Errorf("failed to generate OTP: %v", err)
+		}
+		otp += fmt.Sprintf("%d", num.Int64())
+	}
+	return otp, nil
 }

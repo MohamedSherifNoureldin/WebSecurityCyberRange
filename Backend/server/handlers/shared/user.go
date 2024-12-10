@@ -2,6 +2,7 @@ package shared
 
 import (
 	"fmt"
+	"html"
 	"strings"
 
 	"cyberrange/db"
@@ -90,12 +91,24 @@ func UpdateAccount(c echo.Context) error {
 		return c.JSON(500, map[string]string{"error": "Failed to hash password"})
 	}
 
-	if req.Name != "" && len(req.Name) < 3 {
-		return c.JSON(400, map[string]string{"error": "Name must be at least 3 characters"})
-	}
+	// if req.Name != "" && len(req.Name) < 3 {
+	// 	return c.JSON(400, map[string]string{"error": "Name must be at least 3 characters"})
+	// }
 
-	if req.Name != "" && len(req.Name) > 64 {
-		return c.JSON(400, map[string]string{"error": "Name must be at most 64 characters"})
+	// if req.Name != "" && len(req.Name) > 64 {
+	// 	return c.JSON(400, map[string]string{"error": "Name must be at most 64 characters"})
+	// }
+
+	if req.Name != "" {
+		// Sanitize the username to escape special characters like <, >, &.
+		req.Name = html.EscapeString(req.Name)
+
+		if len(req.Name) < 3 {
+			return c.JSON(400, map[string]string{"error": "Name must be at least 3 characters"})
+		}
+		if len(req.Name) > 64 {
+			return c.JSON(400, map[string]string{"error": "Name must be at most 64 characters"})
+		}
 	}
 
 	if req.Name != "" && req.NewPassword != "" && req.OldPassword != "" {

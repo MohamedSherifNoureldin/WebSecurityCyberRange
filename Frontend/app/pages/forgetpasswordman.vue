@@ -162,8 +162,8 @@ const validateOtp = (state: any) => {
   if (!state.otp) { errors.push({ path: 'otp', message: 'OTP is required' }) }
   if (!state.password) { errors.push({ path: 'password', message: 'Password is required' }) }
   if (!state.confirm_password) { errors.push({ path: 'confirm_password', message: 'Confirm Password is required' }) }
-  //check if otp is less or more that 3 digits and also check if the password is less than 8 characters
-  if (state.otp.length !== 3) { errors.push({ path: 'otp', message: 'OTP must be 3 digits' }) }
+  //check if otp is less or more that 6 digits and also check if the password is less than 8 characters
+  if (state.otp.length !== 6) { errors.push({ path: 'otp', message: 'OTP must be 6 digits' }) }
   if (state.password.length < 8) { errors.push({ path: 'password', message: 'Password must be at least 8 characters' }) }
   if (state.password !== state.confirm_password) { errors.push({ path: 'confirm_password', message: 'Passwords do not match' }) }
 

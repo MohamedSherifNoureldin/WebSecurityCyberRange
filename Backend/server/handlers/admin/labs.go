@@ -4,6 +4,7 @@ import (
 	"cyberrange/db"
 	"cyberrange/utils"
 	"fmt"
+	"html"
 	"io"
 	"path/filepath"
 	"strings"
@@ -28,6 +29,8 @@ func AddLab(c echo.Context) error {
 	if name == "" || description == "" || category == "" {
 		return c.JSON(400, map[string]string{"error": "Please provide all the required fields"})
 	}
+
+	description = html.EscapeString(description)
 
 	composeFile, err := c.FormFile("composefile")
 	if err != nil {

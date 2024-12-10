@@ -84,7 +84,9 @@ onMounted(() => {
                     {{ feedback.created_at }}
                   </p>
                 </div>
-                <p class="text-xl" v-html="feedback.feedback"></p>
+                <!-- <p class="text-xl" v-html="feedback.feedback"></p> -->
+                <p class="text-xl">{{ feedback.feedback }}</p>
+
 
               </div>
               <UDivider />
